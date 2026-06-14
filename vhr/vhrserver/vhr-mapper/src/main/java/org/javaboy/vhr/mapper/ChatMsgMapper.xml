@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.javaboy.vhr.mapper.ChatMsgMapper">
+  <resultMap id="BaseResultMap" type="org.javaboy.vhr.model.ChatMsg">
+    <id column="id" property="id" jdbcType="INTEGER"/>
+    <result column="from_user" property="from" jdbcType="VARCHAR"/>
+    <result column="to_user" property="to" jdbcType="VARCHAR"/>
+    <result column="content" property="content" jdbcType="VARCHAR"/>
+    <result column="create_date" property="date" jdbcType="TIMESTAMP"/>
+    <result column="status" property="status" jdbcType="INTEGER"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, from_user, to_user, content, create_date, status
+  </sql>
+
+  <insert id="insertChatMsg" parameterType="org.javaboy.vhr.model.ChatMsg" useGeneratedKeys="true" keyProperty="id">
+    insert into chat_msg (from_user, to_user, content, create_date, status)
+    values (#{from,jdbcType=VARCHAR}, #{to,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR},
+            #{date,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER})
+  </insert>
+
+  <select id="getChatHistory" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from chat_msg
+    where (from_user = #{username} and to_user = #{friend})
+       or (from_user = #{friend} and to_user = #{username})
+    order by create_date asc, id asc
+  </select>
+
+  <update id="markRead">
+    update chat_msg
+    set status = 1
+    where to_user = #{username}
+      and from_user = #{friend}
+      and status = 0
+  </update>
+
+  <select id="getConversationsByUsername" resultType="org.javaboy.vhr.model.ChatConversation">
+    select
+      friend.username as friendUsername,
+      friend.name as friendName,
+      friend.userface as friendUserface,
+      (select m2.content from chat_msg m2
+        where (m2.from_user = #{username} and m2.to_user = conv.username)
+           or (m2.from_user = conv.username and m2.to_user = #{username})
+        order by m2.create_date desc, m2.id desc limit 1) as lastMessage,
+      (select m3.create_date from chat_msg m3
+        where (m3.from_user = #{username} and m3.to_user = conv.username)
+           or (m3.from_user = conv.username and m3.to_user = #{username})
+        order by m3.create_date desc, m3.id desc limit 1) as lastMessageTime,
+      (select count(*) from chat_msg m4
+        where m4.from_user = conv.username
+          and m4.to_user = #{username}
+          and m4.status = 0) as unreadCount
+    from (
+      select distinct
+        case when from_user = #{username} then to_user else from_user end as username
+      from chat_msg
+      where from_user = #{username} or to_user = #{username}
+    ) conv
+    join hr friend on friend.username = conv.username
+    order by lastMessageTime desc
+  </select>
+</mapper>

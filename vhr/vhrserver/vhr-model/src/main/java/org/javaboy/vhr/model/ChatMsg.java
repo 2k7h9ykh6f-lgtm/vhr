@@ -3,11 +3,16 @@ package org.javaboy.vhr.model;
 import java.util.Date;
 
 public class ChatMsg {
+    private Integer id;
     private String from;
     private String to;
     private String content;
     private Date date;
     private String fromNickname;
+    /**
+     * 0 未读, 1 已读
+     */
+    private Integer status;
 
     public String getFromNickname() {
         return fromNickname;
@@ -47,5 +52,21 @@ public class ChatMsg {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
