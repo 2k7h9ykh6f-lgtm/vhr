@@ -10,6 +10,7 @@
         <result column="isParent" property="isParent" jdbcType="BIT"/>
     </resultMap>
     <resultMap id="DepartmentWithChildren" type="org.javaboy.vhr.model.Department" extends="BaseResultMap">
+        <result column="directEmployeeCount" property="directEmployeeCount" jdbcType="INTEGER"/>
         <collection property="children" ofType="org.javaboy.vhr.model.Department"
                     select="org.javaboy.vhr.mapper.DepartmentMapper.getAllDepartmentsByParentId" column="id"/>
     </resultMap>
@@ -29,8 +30,16 @@
     call deleteDep(#{id,mode=IN,jdbcType=INTEGER},#{result,mode=OUT,jdbcType=INTEGER})
   </select>
     <select id="getAllDepartmentsByParentId" resultMap="DepartmentWithChildren">
-    select * from department where parentId=#{pid};
+    select d.*,
+      (select count(*) from employee e where e.departmentId = d.id) as directEmployeeCount
+    from department d where d.parentId=#{pid};
   </select>
+    <select id="getEmployeeCountByDepId" resultType="java.lang.Integer">
+    select count(*) from employee where departmentId=#{id};
+  </select>
+    <update id="updateDepEnableById" parameterType="org.javaboy.vhr.model.Department">
+    update department set enabled=#{enabled,jdbcType=BIT} where id=#{id,jdbcType=INTEGER};
+  </update>
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
         select
         <include refid="Base_Column_List"/>

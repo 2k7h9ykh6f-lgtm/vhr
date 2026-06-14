@@ -42,6 +42,8 @@ public class Department implements Serializable {
     private Boolean isParent;
     private List<Department> children = new ArrayList<>();
     private Integer result;
+    private Integer directEmployeeCount;
+    private Integer totalEmployeeCount;
 
     public Integer getResult() {
         return result;
@@ -49,6 +51,22 @@ public class Department implements Serializable {
 
     public void setResult(Integer result) {
         this.result = result;
+    }
+
+    public Integer getDirectEmployeeCount() {
+        return directEmployeeCount;
+    }
+
+    public void setDirectEmployeeCount(Integer directEmployeeCount) {
+        this.directEmployeeCount = directEmployeeCount;
+    }
+
+    public Integer getTotalEmployeeCount() {
+        return totalEmployeeCount;
+    }
+
+    public void setTotalEmployeeCount(Integer totalEmployeeCount) {
+        this.totalEmployeeCount = totalEmployeeCount;
     }
 
     public List<Department> getChildren() {

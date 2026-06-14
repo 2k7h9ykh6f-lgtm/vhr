@@ -24,4 +24,8 @@ public interface DepartmentMapper {
     void deleteDepById(Department dep);
 
     List<Department> getAllDepartmentsWithOutChildren();
+
+    Integer getEmployeeCountByDepId(Integer id);
+
+    void updateDepEnableById(Department dep);
 }

@@ -49,4 +49,9 @@ public class DepartmentController {
         }
         return RespBean.error("删除失败");
     }
+
+    @PutMapping("/{id}/enabled")
+    public RespBean updateDepEnable(@PathVariable Integer id, @RequestBody Department dep) {
+        return departmentService.setDepEnableById(id, dep.getEnabled());
+    }
 }
