@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.javaboy.vhr.mapper.ChatMsgMapper">
+    <resultMap id="BaseResultMap" type="org.javaboy.vhr.model.ChatMsg">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="`from`" property="from" jdbcType="VARCHAR"/>
+        <result column="`to`" property="to" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR"/>
+        <result column="`date`" property="date" jdbcType="TIMESTAMP"/>
+        <result column="readStatus" property="readStatus" jdbcType="BIT"/>
+    </resultMap>
+
+    <insert id="insertSelective" parameterType="org.javaboy.vhr.model.ChatMsg" useGeneratedKeys="true" keyProperty="id">
+        insert into chat_msg
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="from != null">
+                `from`,
+            </if>
+            <if test="to != null">
+                `to`,
+            </if>
+            <if test="content != null">
+                content,
+            </if>
+            <if test="date != null">
+                `date`,
+            </if>
+            <if test="readStatus != null">
+                readStatus,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="from != null">
+                #{from,jdbcType=VARCHAR},
+            </if>
+            <if test="to != null">
+                #{to,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                #{content,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="date != null">
+                #{date,jdbcType=TIMESTAMP},
+            </if>
+            <if test="readStatus != null">
+                #{readStatus,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getChatHistory" resultMap="BaseResultMap">
+        SELECT id, `from`, `to`, content, `date`, readStatus
+        FROM chat_msg
+        WHERE (`from` = #{from} AND `to` = #{to})
+           OR (`from` = #{to} AND `to` = #{from})
+        ORDER BY `date` ASC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="getChatHistoryCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM chat_msg
+        WHERE (`from` = #{from} AND `to` = #{to})
+           OR (`from` = #{to} AND `to` = #{from})
+    </select>
+
+    <select id="getContactUsernames" resultType="java.lang.String">
+        SELECT DISTINCT contact FROM (
+            SELECT `to` AS contact FROM chat_msg WHERE `from` = #{username}
+            UNION
+            SELECT `from` AS contact FROM chat_msg WHERE `to` = #{username}
+        ) AS contacts
+    </select>
+
+    <select id="getLastMessage" resultMap="BaseResultMap">
+        SELECT id, `from`, `to`, content, `date`, readStatus
+        FROM chat_msg
+        WHERE (`from` = #{from} AND `to` = #{to})
+           OR (`from` = #{to} AND `to` = #{from})
+        ORDER BY `date` DESC
+        LIMIT 1
+    </select>
+
+    <select id="getUnreadCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM chat_msg
+        WHERE `from` = #{from} AND `to` = #{to} AND readStatus = 0
+    </select>
+
+    <update id="markAsRead">
+        UPDATE chat_msg
+        SET readStatus = 1
+        WHERE `from` = #{from} AND `to` = #{to} AND readStatus = 0
+    </update>
+</mapper>

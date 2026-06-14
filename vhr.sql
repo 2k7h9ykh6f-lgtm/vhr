@@ -495,6 +495,21 @@ begin
 end */$$
 DELIMITER ;
 
+/*Table structure for table `chat_msg` */
+
+CREATE TABLE IF NOT EXISTS `chat_msg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `from` varchar(64) NOT NULL COMMENT '发送者username',
+  `to` varchar(64) NOT NULL COMMENT '接收者username',
+  `content` text COMMENT '消息内容',
+  `date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+  `readStatus` tinyint(1) DEFAULT '0' COMMENT '0未读 1已读',
+  PRIMARY KEY (`id`),
+  KEY `idx_from_to` (`from`, `to`),
+  KEY `idx_to_from` (`to`, `from`),
+  KEY `idx_date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
