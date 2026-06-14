@@ -1,9 +1,11 @@
 package org.javaboy.vhr.service;
 
+import org.javaboy.vhr.mapper.MenuRoleMapper;
 import org.javaboy.vhr.mapper.RoleMapper;
 import org.javaboy.vhr.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +22,11 @@ import java.util.List;
 public class RoleService {
     @Autowired
     RoleMapper roleMapper;
+    @Autowired
+    MenuRoleMapper menuRoleMapper;
+    @Autowired
+    MenuService menuService;
+
     public List<Role> getAllRoles() {
         return roleMapper.getAllRoles();
     }
@@ -28,10 +35,23 @@ public class RoleService {
         if (!role.getName().startsWith("ROLE_")) {
             role.setName("ROLE_" + role.getName());
         }
-        return roleMapper.insert(role);
+        int result = roleMapper.insert(role);
+        if (result == 1) {
+            // 新角色暂无菜单绑定，但需刷新缓存以让 CustomFilterInvocationSecurityMetadataSource 感知角色列表变化
+            menuService.evictMenuCache();
+        }
+        return result;
     }
 
+    @Transactional
     public Integer deleteRoleById(Integer rid) {
-        return roleMapper.deleteByPrimaryKey(rid);
+        // 先清理该角色的菜单绑定关系，避免孤儿记录
+        menuRoleMapper.deleteByRid(rid);
+        int result = roleMapper.deleteByPrimaryKey(rid);
+        if (result == 1) {
+            // 角色被删除，刷新菜单权限缓存，使权限拦截器立即生效
+            menuService.evictMenuCache();
+        }
+        return result;
     }
 }

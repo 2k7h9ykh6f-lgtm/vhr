@@ -6,7 +6,9 @@ import org.javaboy.vhr.model.Hr;
 import org.javaboy.vhr.model.Menu;
 import org.javaboy.vhr.model.MenuRole;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class MenuService {
     MenuMapper menuMapper;
     @Autowired
     MenuRoleMapper menuRoleMapper;
+    @Autowired
+    CacheManager cacheManager;
     public List<Menu> getMenusByHrId() {
         return menuMapper.getMenusByHrId(((Hr) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId());
     }
@@ -47,6 +51,7 @@ public class MenuService {
         return menuMapper.getMidsByRid(rid);
     }
 
+    @CacheEvict(allEntries = true)
     @Transactional
     public boolean updateMenuRole(Integer rid, Integer[] mids) {
         menuRoleMapper.deleteByRid(rid);
@@ -55,5 +60,16 @@ public class MenuService {
         }
         Integer result = menuRoleMapper.insertRecord(rid, mids);
         return result==mids.length;
+    }
+
+    /**
+     * 手动清除菜单权限缓存，供外部模块（如 RoleService）调用。
+     * 通过 CacheManager 直接操作，不依赖 @CacheEvict 注解所在类。
+     */
+    public void evictMenuCache() {
+        org.springframework.cache.Cache cache = cacheManager.getCache("menus_cache");
+        if (cache != null) {
+            cache.clear();
+        }
     }
 }
