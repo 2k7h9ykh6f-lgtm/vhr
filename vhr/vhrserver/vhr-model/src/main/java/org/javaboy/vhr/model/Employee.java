@@ -1,6 +1,8 @@
 package org.javaboy.vhr.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -106,6 +108,26 @@ public class Employee implements Serializable {
     private Date endContract;
 
     private Integer workAge;
+
+    /**
+     * 以下为查询专用字段：仅用于条件过滤，不对应数据库列，也不参与 JSON 序列化。
+     */
+    @JsonIgnore
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date beginContractEndDate;
+
+    @JsonIgnore
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date endContractEndDate;
+
+    @JsonIgnore
+    private Integer contractExpireWithinDays;
+
+    /**
+     * 计算字段：合同剩余天数（DATEDIFF(endContract, CURDATE())），随查询结果一起返回。
+     */
+    private Integer contractRemainingDays;
+
     private Nation nation;
     private Politicsstatus politicsstatus;
     private Department department;
@@ -382,5 +404,49 @@ public class Employee implements Serializable {
 
     public void setWorkAge(Integer workAge) {
         this.workAge = workAge;
+    }
+
+    public Date getBeginContractEndDate() {
+        return beginContractEndDate;
+    }
+
+    public void setBeginContractEndDate(Date beginContractEndDate) {
+        this.beginContractEndDate = beginContractEndDate;
+    }
+
+    public Date getEndContractEndDate() {
+        return endContractEndDate;
+    }
+
+    public void setEndContractEndDate(Date endContractEndDate) {
+        this.endContractEndDate = endContractEndDate;
+    }
+
+    public Integer getContractExpireWithinDays() {
+        return contractExpireWithinDays;
+    }
+
+    public void setContractExpireWithinDays(Integer contractExpireWithinDays) {
+        this.contractExpireWithinDays = contractExpireWithinDays;
+    }
+
+    public Integer getContractRemainingDays() {
+        return contractRemainingDays;
+    }
+
+    public void setContractRemainingDays(Integer contractRemainingDays) {
+        this.contractRemainingDays = contractRemainingDays;
+    }
+
+    /**
+     * positionId 为 posId 的别名，便于按“职位”筛选；语义与现有 posId 等价，二者指向同一列。
+     */
+    @JsonIgnore
+    public Integer getPositionId() {
+        return posId;
+    }
+
+    public void setPositionId(Integer positionId) {
+        this.posId = positionId;
     }
 }
