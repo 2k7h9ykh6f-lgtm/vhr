@@ -45,6 +45,8 @@ public class EmployeeService {
             page = (page - 1) * size;
         }
         List<Employee> data = employeeMapper.getEmployeeByPage(page, size, employee, beginDateScope);
+        // 为每位员工计算合同剩余天数
+        computeContractRemainingDays(data);
         Long total = employeeMapper.getTotal(employee, beginDateScope);
         RespPageBean bean = new RespPageBean();
         bean.setData(data);
@@ -108,5 +110,37 @@ public class EmployeeService {
 
     public Employee getEmployeeById(Integer empId) {
         return employeeMapper.getEmployeeById(empId);
+    }
+
+    /**
+     * 批量计算员工合同剩余天数。
+     * contractRemainingDays = endContract 距今天的天数；
+     * endContract 为空时 contractRemainingDays 为 null。
+     */
+    private void computeContractRemainingDays(List<Employee> employees) {
+        if (employees == null || employees.isEmpty()) {
+            return;
+        }
+        long todayMillis = stripTime(new Date()).getTime();
+        for (Employee emp : employees) {
+            if (emp.getEndContract() != null) {
+                long endMillis = stripTime(emp.getEndContract()).getTime();
+                int days = (int) ((endMillis - todayMillis) / (1000L * 60 * 60 * 24));
+                emp.setContractRemainingDays(days);
+            }
+        }
+    }
+
+    /**
+     * 将日期的时间部分归零（只保留年月日），确保天数计算准确。
+     */
+    private Date stripTime(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

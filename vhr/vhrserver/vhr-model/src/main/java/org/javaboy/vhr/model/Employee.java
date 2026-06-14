@@ -1,6 +1,9 @@
 package org.javaboy.vhr.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -112,6 +115,24 @@ public class Employee implements Serializable {
     private JobLevel jobLevel;
     private Position position;
     private Salary salary;
+
+    // ---------- 查询参数（非数据库字段，仅用于筛选条件） ----------
+
+    @JsonIgnore
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date beginContractEndDate;
+
+    @JsonIgnore
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date endContractEndDate;
+
+    @JsonIgnore
+    private Integer contractExpireWithinDays;
+
+    // ---------- 计算字段（非数据库字段，用于返回数据） ----------
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer contractRemainingDays;
 
     public Salary getSalary() {
         return salary;
@@ -382,5 +403,37 @@ public class Employee implements Serializable {
 
     public void setWorkAge(Integer workAge) {
         this.workAge = workAge;
+    }
+
+    public Date getBeginContractEndDate() {
+        return beginContractEndDate;
+    }
+
+    public void setBeginContractEndDate(Date beginContractEndDate) {
+        this.beginContractEndDate = beginContractEndDate;
+    }
+
+    public Date getEndContractEndDate() {
+        return endContractEndDate;
+    }
+
+    public void setEndContractEndDate(Date endContractEndDate) {
+        this.endContractEndDate = endContractEndDate;
+    }
+
+    public Integer getContractExpireWithinDays() {
+        return contractExpireWithinDays;
+    }
+
+    public void setContractExpireWithinDays(Integer contractExpireWithinDays) {
+        this.contractExpireWithinDays = contractExpireWithinDays;
+    }
+
+    public Integer getContractRemainingDays() {
+        return contractRemainingDays;
+    }
+
+    public void setContractRemainingDays(Integer contractRemainingDays) {
+        this.contractRemainingDays = contractRemainingDays;
     }
 }

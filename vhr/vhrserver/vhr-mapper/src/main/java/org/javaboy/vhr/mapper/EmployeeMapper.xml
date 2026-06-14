@@ -134,6 +134,17 @@
         <if test="beginDateScope !=null">
             and e.beginDate between #{beginDateScope[0]} and #{beginDateScope[1]}
         </if>
+        <if test="emp.beginContractEndDate !=null">
+            and e.endContract &gt;= #{emp.beginContractEndDate}
+        </if>
+        <if test="emp.endContractEndDate !=null">
+            and e.endContract &lt;= #{emp.endContractEndDate}
+        </if>
+        <if test="emp.contractExpireWithinDays !=null">
+            and e.endContract is not null
+            and DATEDIFF(e.endContract, CURDATE()) &gt;= 0
+            and DATEDIFF(e.endContract, CURDATE()) &lt;= #{emp.contractExpireWithinDays}
+        </if>
         <if test="page !=null and size!=null">
             limit #{page},#{size}
         </if>
@@ -162,6 +173,17 @@
                 </if>
                 <if test="emp.posId !=null">
                     and e.posId =#{emp.posId}
+                </if>
+                <if test="emp.beginContractEndDate !=null">
+                    and e.endContract &gt;= #{emp.beginContractEndDate}
+                </if>
+                <if test="emp.endContractEndDate !=null">
+                    and e.endContract &lt;= #{emp.endContractEndDate}
+                </if>
+                <if test="emp.contractExpireWithinDays !=null">
+                    and e.endContract is not null
+                    and DATEDIFF(e.endContract, CURDATE()) &gt;= 0
+                    and DATEDIFF(e.endContract, CURDATE()) &lt;= #{emp.contractExpireWithinDays}
                 </if>
             </if>
             <if test="beginDateScope !=null">
