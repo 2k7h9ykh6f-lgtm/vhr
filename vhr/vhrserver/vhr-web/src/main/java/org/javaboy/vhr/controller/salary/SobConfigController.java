@@ -1,11 +1,14 @@
 package org.javaboy.vhr.controller.salary;
 
 import org.javaboy.vhr.model.Employee;
+import org.javaboy.vhr.model.Hr;
 import org.javaboy.vhr.model.RespBean;
 import org.javaboy.vhr.model.RespPageBean;
 import org.javaboy.vhr.model.Salary;
+import org.javaboy.vhr.model.SalaryChangeLog;
 import org.javaboy.vhr.service.EmployeeService;
 import org.javaboy.vhr.service.SalaryService;
+import org.javaboy.vhr.utils.HrUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +39,17 @@ public class SobConfigController {
             return RespBean.ok("更新成功");
         }
         return RespBean.error("更新失败");
+    }
+
+    @PutMapping("/batch")
+    public RespBean batchUpdateEmployeeSalary(@RequestParam("eids") List<Integer> eids, @RequestParam("sid") Integer sid) {
+        Hr currentHr = HrUtils.getCurrentHr();
+        String operator = currentHr == null ? null : currentHr.getName();
+        return employeeService.batchUpdateEmployeeSalary(eids, sid, operator);
+    }
+
+    @GetMapping("/log")
+    public List<SalaryChangeLog> getSalaryChangeLogs(@RequestParam(required = false) Integer eid) {
+        return salaryService.getSalaryChangeLogs(eid);
     }
 }

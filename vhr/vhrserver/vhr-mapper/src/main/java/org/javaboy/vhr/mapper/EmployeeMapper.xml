@@ -99,6 +99,9 @@
     <insert id="updateEmployeeSalaryById">
         REPLACE INTO empsalary (eid,sid) VALUES(#{eid},#{sid})
     </insert>
+    <select id="getSalaryIdByEid" resultType="java.lang.Integer">
+        select sid from empsalary where eid = #{eid}
+    </select>
     <select id="getEmployeeById" resultMap="AllEmployeeInfo">
         select e.*,p.`id` as pid,p.`name` as pname,n.`id` as nid,n.`name` as nname,d.`id` as did,d.`name` as
         dname,j.`id` as jid,j.`name` as jname,pos.`id` as posid,pos.`name` as posname from employee e,nation

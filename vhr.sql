@@ -206,6 +206,21 @@ CREATE TABLE `empsalary` (
 
 insert  into `empsalary`(`id`,`eid`,`sid`) values (6,4,10),(10,5,9),(11,6,13),(12,7,13),(14,8,10),(15,9,10),(20,10,13),(21,11,9),(22,3,13),(24,2,9),(25,1,13),(26,33,10),(28,34,9),(29,44,10),(30,45,10),(31,43,10),(32,47,10),(33,52,13),(34,53,10),(35,54,10),(36,56,10),(38,21,9);
 
+/*Table structure for table `salary_change_log` */
+
+DROP TABLE IF EXISTS `salary_change_log`;
+
+CREATE TABLE `salary_change_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `eid` int(11) DEFAULT NULL COMMENT '员工编号',
+  `old_sid` int(11) DEFAULT NULL COMMENT '原薪资账套id',
+  `new_sid` int(11) DEFAULT NULL COMMENT '新薪资账套id',
+  `operator` varchar(255) DEFAULT NULL COMMENT '操作人',
+  `create_time` datetime DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_scl_eid` (`eid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*Table structure for table `hr` */
 
 DROP TABLE IF EXISTS `hr`;
