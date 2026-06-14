@@ -43,7 +43,7 @@ public class PermissController {
     @PutMapping("/")
     public RespBean updateMenuRole(Integer rid, Integer[] mids) {
         if (menuService.updateMenuRole(rid, mids)) {
-            return RespBean.ok("更新成功!");
+            return RespBean.ok("更新成功!", menuService.getMenuRoleSummary());
         }
         return RespBean.error("更新失败!");
     }
@@ -51,7 +51,7 @@ public class PermissController {
     @PostMapping("/role")
     public RespBean addRole(@RequestBody Role role) {
         if (roleService.addRole(role) == 1) {
-            return RespBean.ok("添加成功!");
+            return RespBean.ok("添加成功!", menuService.getMenuRoleSummary());
         }
         return RespBean.error("添加失败!");
     }
@@ -59,7 +59,7 @@ public class PermissController {
     @DeleteMapping("/role/{rid}")
     public RespBean deleteRoleById(@PathVariable Integer rid) {
         if (roleService.deleteRoleById(rid) == 1) {
-            return RespBean.ok("删除成功!");
+            return RespBean.ok("删除成功!", menuService.getMenuRoleSummary());
         }
         return RespBean.error("删除失败!");
     }

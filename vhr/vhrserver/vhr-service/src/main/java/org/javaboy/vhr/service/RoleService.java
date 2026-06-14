@@ -3,6 +3,7 @@ package org.javaboy.vhr.service;
 import org.javaboy.vhr.mapper.RoleMapper;
 import org.javaboy.vhr.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class RoleService {
         return roleMapper.getAllRoles();
     }
 
+    @CacheEvict(value = "menus_cache", allEntries = true)
     public Integer addRole(Role role) {
         if (!role.getName().startsWith("ROLE_")) {
             role.setName("ROLE_" + role.getName());
@@ -31,6 +33,7 @@ public class RoleService {
         return roleMapper.insert(role);
     }
 
+    @CacheEvict(value = "menus_cache", allEntries = true)
     public Integer deleteRoleById(Integer rid) {
         return roleMapper.deleteByPrimaryKey(rid);
     }
