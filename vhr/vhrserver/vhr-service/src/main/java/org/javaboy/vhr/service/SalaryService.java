@@ -17,6 +17,10 @@ public class SalaryService {
         return salaryMapper.getAllSalaries();
     }
 
+    public Salary getSalaryById(Integer id) {
+        return salaryMapper.selectByPrimaryKey(id);
+    }
+
     public Integer addSalary(Salary salary) {
         salary.setCreateDate(new Date());
         return salaryMapper.insertSelective(salary);

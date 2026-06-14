@@ -1,22 +1,21 @@
 package org.javaboy.vhr.service;
 
 import org.javaboy.vhr.mapper.EmployeeMapper;
-import org.javaboy.vhr.model.Employee;
-import org.javaboy.vhr.model.MailConstants;
-import org.javaboy.vhr.model.MailSendLog;
-import org.javaboy.vhr.model.RespPageBean;
+import org.javaboy.vhr.mapper.SalaryChangeRecordMapper;
+import org.javaboy.vhr.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @作者 江南一点雨
@@ -35,6 +34,10 @@ public class EmployeeService {
     RabbitTemplate rabbitTemplate;
     @Autowired
     MailSendLogService mailSendLogService;
+    @Autowired
+    SalaryChangeRecordMapper salaryChangeRecordMapper;
+    @Autowired
+    SalaryService salaryService;
     public final static Logger logger = LoggerFactory.getLogger(EmployeeService.class);
     SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
     SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
@@ -103,10 +106,105 @@ public class EmployeeService {
     }
 
     public Integer updateEmployeeSalaryById(Integer eid, Integer sid) {
-        return employeeMapper.updateEmployeeSalaryById(eid, sid);
+        Integer result = employeeMapper.updateEmployeeSalaryById(eid, sid);
+        if (result == 1 || result == 2) {
+            recordSalaryChange(eid, null, sid);
+        }
+        return result;
     }
 
     public Employee getEmployeeById(Integer empId) {
         return employeeMapper.getEmployeeById(empId);
+    }
+
+    public Map<String, Object> batchUpdateEmployeeSalaryById(List<Integer> eids, Integer sid) {
+        Map<String, Object> resultMap = new HashMap<>();
+
+        // 校验账套是否存在
+        Salary salary = salaryService.getSalaryById(sid);
+        if (salary == null) {
+            resultMap.put("status", "error");
+            resultMap.put("msg", "薪资账套不存在");
+            return resultMap;
+        }
+
+        // 查询存在的员工
+        List<Employee> existingEmployees = employeeMapper.getEmployeeByIds(eids);
+        Set<Integer> existingEids = existingEmployees.stream()
+                .map(Employee::getId)
+                .collect(Collectors.toSet());
+
+        // 找出不存在的员工
+        List<Integer> notFoundEids = eids.stream()
+                .filter(eid -> !existingEids.contains(eid))
+                .collect(Collectors.toList());
+
+        // 查询当前员工的旧账套绑定
+        List<EmpSalary> currentBindings = existingEids.isEmpty()
+                ? Collections.emptyList()
+                : employeeMapper.getEmpSalaryByEids(new ArrayList<>(existingEids));
+        Map<Integer, Integer> oldSidMap = new HashMap<>();
+        for (EmpSalary es : currentBindings) {
+            oldSidMap.put(es.getEid(), es.getSid());
+        }
+
+        // 逐个更新存在的员工账套
+        int successCount = 0;
+        Date now = new Date();
+        Hr operator = getCurrentOperator();
+        List<SalaryChangeRecord> records = new ArrayList<>();
+
+        for (Integer eid : existingEids) {
+            Integer updateResult = employeeMapper.updateEmployeeSalaryById(eid, sid);
+            if (updateResult == 1 || updateResult == 2) {
+                successCount++;
+                SalaryChangeRecord record = new SalaryChangeRecord();
+                record.setEid(eid);
+                record.setOldSid(oldSidMap.get(eid));
+                record.setNewSid(sid);
+                record.setOperateTime(now);
+                if (operator != null) {
+                    record.setOperatorId(operator.getId());
+                    record.setOperatorName(operator.getName());
+                }
+                records.add(record);
+            }
+        }
+
+        // 批量插入变更记录
+        if (!records.isEmpty()) {
+            salaryChangeRecordMapper.insertBatch(records);
+        }
+
+        resultMap.put("status", "ok");
+        resultMap.put("successCount", successCount);
+        resultMap.put("notFoundEids", notFoundEids);
+        return resultMap;
+    }
+
+    private void recordSalaryChange(Integer eid, Integer oldSid, Integer newSid) {
+        SalaryChangeRecord record = new SalaryChangeRecord();
+        record.setEid(eid);
+        record.setOldSid(oldSid);
+        record.setNewSid(newSid);
+        record.setOperateTime(new Date());
+        Hr operator = getCurrentOperator();
+        if (operator != null) {
+            record.setOperatorId(operator.getId());
+            record.setOperatorName(operator.getName());
+        }
+        salaryChangeRecordMapper.insertBatch(Collections.singletonList(record));
+    }
+
+    private Hr getCurrentOperator() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof Hr) {
+                return (Hr) authentication.getPrincipal();
+            }
+        } catch (Exception e) {
+            logger.warn("获取当前操作人失败", e);
+        }
+        return null;
     }
 }

@@ -495,6 +495,22 @@ begin
 end */$$
 DELIMITER ;
 
+/*Table structure for table `salary_change_record` */
+
+DROP TABLE IF EXISTS `salary_change_record`;
+
+CREATE TABLE `salary_change_record` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `eid` INT(11) NOT NULL COMMENT '员工ID',
+  `oldSid` INT(11) DEFAULT NULL COMMENT '原账套ID',
+  `newSid` INT(11) NOT NULL COMMENT '新账套ID',
+  `operatorId` INT(11) DEFAULT NULL COMMENT '操作人ID',
+  `operatorName` VARCHAR(64) DEFAULT NULL COMMENT '操作人姓名',
+  `operateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_eid` (`eid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='薪资账套变更记录';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
