@@ -49,4 +49,15 @@ public class DepartmentController {
         }
         return RespBean.error("删除失败");
     }
+
+    @PutMapping("/{id}/enabled/{enabled}")
+    public RespBean updateEnabled(@PathVariable Integer id, @PathVariable Boolean enabled) {
+        int result = departmentService.updateEnabled(id, enabled);
+        if (result == 1) {
+            return RespBean.ok(Boolean.TRUE.equals(enabled) ? "启用成功" : "禁用成功");
+        } else if (result == -1) {
+            return RespBean.error("该部门或其子部门下有员工，无法禁用");
+        }
+        return RespBean.error("部门不存在");
+    }
 }

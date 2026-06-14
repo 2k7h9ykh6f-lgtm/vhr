@@ -1,5 +1,6 @@
 package org.javaboy.vhr.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.javaboy.vhr.model.Department;
 
 import java.util.List;
@@ -24,4 +25,8 @@ public interface DepartmentMapper {
     void deleteDepById(Department dep);
 
     List<Department> getAllDepartmentsWithOutChildren();
+
+    int updateEnabled(@Param("id") Integer id, @Param("enabled") Boolean enabled);
+
+    int getSubtreeEmployeeCount(@Param("id") Integer id);
 }

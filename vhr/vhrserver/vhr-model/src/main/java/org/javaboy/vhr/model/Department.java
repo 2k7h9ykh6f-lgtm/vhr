@@ -43,6 +43,11 @@ public class Department implements Serializable {
     private List<Department> children = new ArrayList<>();
     private Integer result;
 
+    // 非数据库字段：当前部门直属员工数（由 SQL 子查询填充）
+    private Integer directEmployeeCount;
+    // 非数据库字段：当前部门及所有子部门的员工总数（由 SQL 子查询填充）
+    private Integer totalEmployeeCount;
+
     public Integer getResult() {
         return result;
     }
@@ -105,5 +110,21 @@ public class Department implements Serializable {
 
     public void setParent(Boolean parent) {
         isParent = parent;
+    }
+
+    public Integer getDirectEmployeeCount() {
+        return directEmployeeCount;
+    }
+
+    public void setDirectEmployeeCount(Integer directEmployeeCount) {
+        this.directEmployeeCount = directEmployeeCount;
+    }
+
+    public Integer getTotalEmployeeCount() {
+        return totalEmployeeCount;
+    }
+
+    public void setTotalEmployeeCount(Integer totalEmployeeCount) {
+        this.totalEmployeeCount = totalEmployeeCount;
     }
 }

@@ -8,6 +8,8 @@
         <result column="depPath" property="depPath" jdbcType="VARCHAR"/>
         <result column="enabled" property="enabled" jdbcType="BIT"/>
         <result column="isParent" property="isParent" jdbcType="BIT"/>
+        <result column="directEmployeeCount" property="directEmployeeCount" jdbcType="INTEGER"/>
+        <result column="totalEmployeeCount" property="totalEmployeeCount" jdbcType="INTEGER"/>
     </resultMap>
     <resultMap id="DepartmentWithChildren" type="org.javaboy.vhr.model.Department" extends="BaseResultMap">
         <collection property="children" ofType="org.javaboy.vhr.model.Department"
@@ -29,7 +31,12 @@
     call deleteDep(#{id,mode=IN,jdbcType=INTEGER},#{result,mode=OUT,jdbcType=INTEGER})
   </select>
     <select id="getAllDepartmentsByParentId" resultMap="DepartmentWithChildren">
-    select * from department where parentId=#{pid};
+    select d.*,
+        (SELECT COUNT(*) FROM employee WHERE departmentId = d.id) AS directEmployeeCount,
+        (SELECT COUNT(*) FROM employee e
+            JOIN department sub ON e.departmentId = sub.id
+            WHERE sub.depPath LIKE CONCAT(d.depPath, '%')) AS totalEmployeeCount
+    from department d where d.parentId=#{pid};
   </select>
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
         select
@@ -120,4 +127,13 @@
       isParent = #{isParent,jdbcType=BIT}
     where id = #{id,jdbcType=INTEGER}
   </update>
+    <update id="updateEnabled">
+    update department set enabled = #{enabled} where id = #{id}
+  </update>
+    <select id="getSubtreeEmployeeCount" resultType="int">
+    SELECT COUNT(*) FROM employee e
+        JOIN department sub ON e.departmentId = sub.id
+        WHERE sub.depPath LIKE CONCAT(
+            (SELECT depPath FROM department WHERE id = #{id}), '%')
+  </select>
 </mapper>

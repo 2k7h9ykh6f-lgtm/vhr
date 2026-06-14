@@ -36,4 +36,27 @@ public class DepartmentService {
     public List<Department> getAllDepartmentsWithOutChildren() {
         return departmentMapper.getAllDepartmentsWithOutChildren();
     }
+
+    /**
+     * 启用或禁用部门。
+     * 禁用时，若该部门及其所有子部门下存在员工，则拒绝操作并返回 -1。
+     *
+     * @param id      部门 ID
+     * @param enabled 是否启用
+     * @return 1 成功, -1 部门下有员工无法禁用, 0 部门不存在
+     */
+    public int updateEnabled(Integer id, Boolean enabled) {
+        Department dep = departmentMapper.selectByPrimaryKey(id);
+        if (dep == null) {
+            return 0;
+        }
+        if (Boolean.FALSE.equals(enabled)) {
+            int employeeCount = departmentMapper.getSubtreeEmployeeCount(id);
+            if (employeeCount > 0) {
+                return -1;
+            }
+        }
+        departmentMapper.updateEnabled(id, enabled);
+        return 1;
+    }
 }
